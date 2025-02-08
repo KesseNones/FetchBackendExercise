@@ -5,16 +5,28 @@ import (
 	"net/http"
 	"os"
 	"errors"
+	"github.com/google/uuid"
 )
 
-func handler(w http.ResponseWriter, r *http.Request){
-	fmt.Fprintf(w, "TEST MESSAGE")
+//Handles root
+func Handler(w http.ResponseWriter, r *http.Request){
+	fmt.Println(r)
+	var newId string = uuid.New().String()
+	fmt.Println("TEST", newId)
+	fmt.Fprintf(w, "Getting root! Id is: %s", newId)
 }
 
+//Handles another endpoint as a test.
+func FooHandle(w http.ResponseWriter, r *http.Request){
+	fmt.Println(r)
+	fmt.Fprintf(w, "Getting foo!")
+}
 
 func main(){
-	http.HandleFunc("/", handler)
-	fmt.Println("Listening on port 8000...")
+	http.HandleFunc("/", Handler)
+	http.HandleFunc("/foo", FooHandle) 
+
+	fmt.Println("Listening on Port 8000!")
 	
 	err := http.ListenAndServe(":8000", nil)
 
@@ -24,4 +36,6 @@ func main(){
 		fmt.Printf("Error starting server: %s\n", err)
 		os.Exit(1)
 	}
+
+
 }
