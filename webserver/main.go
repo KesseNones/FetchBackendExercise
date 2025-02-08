@@ -6,7 +6,7 @@ import (
 	"os"
 	"errors"
 	"github.com/google/uuid"
-	//"encoding/json"
+	"encoding/json"
 	"io/ioutil"
 )
 
@@ -14,10 +14,14 @@ type DataBase struct {
 	names []string
 }
 
+type Input struct{
+	Name string `json:"name"`
+}
+
 //Adds posted name to db.
 func (db *DataBase) NameHandler(w http.ResponseWriter, r *http.Request){
 	fmt.Println(uuid.New().String())
-	if r.Method == "GET"{
+	if r.Method == http.MethodGet{
 		fmt.Println("GET REQUEST")
 		if len(db.names) == 0{
 			fmt.Fprintf(w, "NO NAMES\n")
@@ -25,17 +29,24 @@ func (db *DataBase) NameHandler(w http.ResponseWriter, r *http.Request){
 		for i := range db.names{
 			fmt.Fprintf(w, "%s\n", db.names[i])
 		}
-	}else if r.Method == "POST"{
+	}else if r.Method == http.MethodPost{
 		fmt.Println("POST REQUEST")
-
-		bod, err := ioutil.ReadAll(r.Body)
-		if err != nil{
-			fmt.Println("STUFF BROKE")
+	
+		body, err0 := ioutil.ReadAll(r.Body)
+		if err0 != nil{
+			fmt.Println("STUFF BROKE HARD")
 			return
 		}
-		var stringBody string = string(bod)
+
+		var input Input
+		
+		err := json.Unmarshal(body, &input)
+		if err != nil{
+			fmt.Println("STUFF BROKE", err)
+			return
+		}
 			
-		db.names = append(db.names, stringBody)
+		db.names = append(db.names, input.Name)
 	}else{
 		fmt.Fprintf(w, "ERROR! Request must be a GET or POST!")
 	}
