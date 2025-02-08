@@ -6,25 +6,48 @@ import (
 	"os"
 	"errors"
 	"github.com/google/uuid"
+	//"encoding/json"
+	"io/ioutil"
 )
 
-//Handles root
-func Handler(w http.ResponseWriter, r *http.Request){
-	fmt.Println(r)
-	var newId string = uuid.New().String()
-	fmt.Println("TEST", newId)
-	fmt.Fprintf(w, "Getting root! Id is: %s", newId)
+type DataBase struct {
+	names []string
 }
 
-//Handles another endpoint as a test.
-func FooHandle(w http.ResponseWriter, r *http.Request){
-	fmt.Println(r)
-	fmt.Fprintf(w, "Getting foo!")
+//Adds posted name to db.
+func (db *DataBase) NameHandler(w http.ResponseWriter, r *http.Request){
+	fmt.Println(uuid.New().String())
+	if r.Method == "GET"{
+		fmt.Println("GET REQUEST")
+		if len(db.names) == 0{
+			fmt.Fprintf(w, "NO NAMES\n")
+		}
+		for i := range db.names{
+			fmt.Fprintf(w, "%s\n", db.names[i])
+		}
+	}else if r.Method == "POST"{
+		fmt.Println("POST REQUEST")
+
+		bod, err := ioutil.ReadAll(r.Body)
+		if err != nil{
+			fmt.Println("STUFF BROKE")
+			return
+		}
+		var stringBody string = string(bod)
+			
+		db.names = append(db.names, stringBody)
+	}else{
+		fmt.Fprintf(w, "ERROR! Request must be a GET or POST!")
+	}
 }
 
 func main(){
-	http.HandleFunc("/", Handler)
-	http.HandleFunc("/foo", FooHandle) 
+	data := &DataBase{
+		names: []string{},
+	}
+
+	http.HandleFunc("/names", data.NameHandler)
+	//http.HandleFunc("/names", data.DisplayNames) 
 
 	fmt.Println("Listening on Port 8000!")
 	
