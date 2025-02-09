@@ -100,6 +100,12 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		//DEBUG; DESTROY LATER!!!
 		fmt.Println(totalPoints)
 
+		//5 points for every two items on receipt.
+		totalPoints += ((len(receipt.Items) / 2) * 5)
+
+		//DEBUG; DESTROY LATER!!!
+		fmt.Println(totalPoints)
+
 	}else{
 		//ADD REAL ERROR HERE LATER!!!
 		fmt.Println("BAD REQUEST!!!!")
