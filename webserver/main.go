@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"encoding/json"
 	"io/ioutil"
+	"unicode"
 )
 
 type ReceiptItem struct{
@@ -42,21 +43,36 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 
 		marshErr := json.Unmarshal(requestBody, &receipt)
 		if marshErr != nil{
+			//PUT REAL ERROR HERE LATER!!!
 			fmt.Println("FAILED TO PARSE BECAUSE:", marshErr)
 			return
 		}
 
+		//DEBUG; DESTROY LATER
 		fmt.Println("SUCCESS:", uuid.New().String())
 
+		//DEBUG OUTPUT
+		//DESTROY LATER!!!
 		jsonString, toStrErr := json.Marshal(receipt)
 		if toStrErr != nil {
 			fmt.Println(toStrErr)
 			return
 		}
-
 		fmt.Println("READ IN:\n", string(jsonString))
 
-		//Calculate points here!
+		totalPoints := 0
+
+		//One point for every alphanumeric character 
+		// in retailer name.
+		for _, c := range receipt.Retailer{
+			if unicode.IsLetter(c) || unicode.IsDigit(c){
+				totalPoints += 1
+			} 
+		}
+
+		//DEBUG; DESTROY LATER
+		fmt.Println(totalPoints)
+
 
 	}else{
 		//ADD REAL ERROR HERE LATER!!!
