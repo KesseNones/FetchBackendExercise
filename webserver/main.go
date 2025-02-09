@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"unicode"
+	"strconv"
 )
 
 type ReceiptItem struct{
@@ -73,6 +74,26 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		//DEBUG; DESTROY LATER
 		fmt.Println(totalPoints)
 
+		//Parses receipt Total to floating point 
+		// for the two following point calculations.
+		floatTotal, convErr := strconv.ParseFloat(receipt.Total, 64)
+		if convErr != nil{
+			//PROBABLY ADD A REAL ERROR HERE LATER
+			fmt.Println("FAILED TO CONVERT TOTAL TO FLOAT!!!")
+			return
+		}
+
+		//50 points if total is round dollar amount.
+		//Might have edge case with fractional cents, 
+		// if testing goes that far.
+		if floatTotal == float64(int(floatTotal)){
+			totalPoints += 50
+		}
+
+		//DEBUG; DESTROY LATER!!!
+		fmt.Println(totalPoints)
+
+		
 
 	}else{
 		//ADD REAL ERROR HERE LATER!!!
