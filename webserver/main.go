@@ -10,6 +10,8 @@ import (
 	"io/ioutil"
 	"unicode"
 	"strconv"
+	"strings"
+	"math"
 )
 
 type ReceiptItem struct{
@@ -102,6 +104,30 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 
 		//5 points for every two items on receipt.
 		totalPoints += ((len(receipt.Items) / 2) * 5)
+
+		//DEBUG; DESTROY LATER!!!
+		fmt.Println(totalPoints)
+
+		//Iterates through items of given receipt, 
+		// if the trimmed length of an item is a multiple of 3,
+		// multiplies the item price by 0.2 
+		// and rounds up to nearest integer (ceiling), 
+		// the result of which is the number of points added 
+		// to the total from that given item.
+		for _, item := range receipt.Items{
+			if len(strings.TrimSpace(item.ShortDesc)) % 3 == 0{
+				floatPrice, err := strconv.ParseFloat(item.Price, 64)
+				if err != nil{
+					//PUT REAL ERROR HERE LATER!!!
+					fmt.Println("FAILED TO PARSE ITEM PRICE!")
+					return
+				}
+
+				//Interpreting "number of points earned" to mean adding to total, 
+				// not reseting total.
+				totalPoints += int(math.Ceil(floatPrice * 0.2))
+			}
+		}
 
 		//DEBUG; DESTROY LATER!!!
 		fmt.Println(totalPoints)
