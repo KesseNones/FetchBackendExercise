@@ -93,7 +93,12 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		//DEBUG; DESTROY LATER!!!
 		fmt.Println(totalPoints)
 
-		
+		//25 points if the total is a multiple of 0.25
+		if int(floatTotal * 100) % 25 == 0{
+			totalPoints += 25
+		}
+		//DEBUG; DESTROY LATER!!!
+		fmt.Println(totalPoints)
 
 	}else{
 		//ADD REAL ERROR HERE LATER!!!
