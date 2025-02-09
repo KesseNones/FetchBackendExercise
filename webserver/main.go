@@ -48,6 +48,14 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 
 		fmt.Println("SUCCESS:", uuid.New().String())
 
+		jsonString, toStrErr := json.Marshal(receipt)
+		if toStrErr != nil {
+			fmt.Println(toStrErr)
+			return
+		}
+
+		fmt.Println("READ IN:\n", string(jsonString))
+
 		//Calculate points here!
 
 	}else{
