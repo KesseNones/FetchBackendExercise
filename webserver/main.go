@@ -39,6 +39,10 @@ type PointResponse struct {
 	Points int `json:"points"`
 }
 
+func InvalidReceiptError(w http.ResponseWriter){
+	http.Error(w, "The receipt is invalid", http.StatusBadRequest)
+}
+
 //Takes in the input receipt, calculates point value, 
 // and writes points to database.
 func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
@@ -47,9 +51,7 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 
 		jsonParseErr := json.NewDecoder(r.Body).Decode(&receipt)
 		if jsonParseErr != nil{
-			http.Error(w, 
-				fmt.Sprintf("Invalid JSON: %s", jsonParseErr), 
-				http.StatusBadRequest)
+			InvalidReceiptError(w)
 			return
 		}
 
@@ -63,6 +65,20 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		fmt.Println("READ IN:\n", string(jsonString))
 
 		totalPoints := 0
+
+		//Kicks back error if any of the required fields don't exist 
+		// or don't quite follow the desired format.
+		if (
+			len(receipt.Retailer) == 0 ||
+			len(receipt.Total) == 0 ||
+			receipt.Items == nil ||
+			len(receipt.Items) == 0 ||
+			len(strings.Split(receipt.PurchaseDate, "-")) != 3 ||
+			len(strings.Split(receipt.PurchaseTime, ":")) != 2){
+			
+			InvalidReceiptError(w)
+			return
+		}
 
 		//One point for every alphanumeric character 
 		// in retailer name.
@@ -79,9 +95,7 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		// for the two following point calculations.
 		floatTotal, convErr := strconv.ParseFloat(receipt.Total, 64)
 		if convErr != nil{
-
-			//PROBABLY ADD A REAL ERROR HERE LATER
-			fmt.Println("FAILED TO CONVERT TOTAL TO FLOAT!!!")
+			InvalidReceiptError(w)
 			return
 		}
 
