@@ -40,7 +40,7 @@ type PointResponse struct {
 }
 
 func InvalidReceiptError(w http.ResponseWriter){
-	http.Error(w, "The receipt is invalid", http.StatusBadRequest)
+	http.Error(w, "The receipt is invalid.", http.StatusBadRequest)
 }
 
 //Takes in the input receipt, calculates point value, 
@@ -80,6 +80,7 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 			return
 		}
 
+		//Used to save parsed prices from Items.
 		prices := []float64{}
 
 		//Iterates through all items in receipt, 
@@ -115,8 +116,9 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 
 		//Parses receipt Total to floating point 
 		// for the two following point calculations.
+		// Also makes sure it's not negative.
 		floatTotal, convErr := strconv.ParseFloat(receipt.Total, 64)
-		if convErr != nil{
+		if convErr != nil || floatTotal < 0.0{
 			InvalidReceiptError(w)
 			return
 		}
@@ -161,7 +163,7 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		//DEBUG; DESTROY LATER!!!
 		fmt.Println(totalPoints)
 
-		//Adds 6 points to total if the day of the purchase is odd.
+		//Splits up date for parsing.
 		datePieces := strings.Split(receipt.PurchaseDate, "-")
 		//Checks to make sure each part of date is a valid date piece.
 		yearInt, yearErr := strconv.Atoi(datePieces[0])
@@ -197,17 +199,13 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 			return
 		}
 
-		//Adds if day is odd.
+		//Adds 6 points if purchase day is odd.
 		if dayInt % 2 == 1{
 			totalPoints += 6
 		}
 
 		//DEBUG; DESTROY LATER!!!
 		fmt.Println(totalPoints)
-
-                //Adds 10 points if time of purchase is after 14:00 sharp and before 16:00.
-                // This is interpreted to mean that any time between 14:01 
-                // and 15:59 inclusive is valid.
 		
 		//Splits time into hours and minutes.
 		timePieces := strings.Split(receipt.PurchaseTime, ":")
@@ -226,7 +224,9 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 			return
 		}
 
-		//Adds 10 points if within desired range.
+		//Adds 10 points if time of purchase is after 14:00 sharp and before 16:00.
+                // This is interpreted to mean that any time between 14:01 
+                // and 15:59 inclusive is valid.
 		if (hourInt == 14 && minInt > 0) || hourInt == 15{
 			totalPoints += 10
 		} 
@@ -251,8 +251,9 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 
 
 	}else{
-		//ADD REAL ERROR HERE LATER!!!
-		fmt.Println("BAD REQUEST!!!!")
+		//Only thrown if request is wrong, 
+		// which can be intepreted as an invalid receipt.
+		InvalidReceiptError(w)
 	}
 }
 
@@ -276,20 +277,22 @@ func (db *DataBase) GetPointsFromId(w http.ResponseWriter, r *http.Request){
 			w.Header().Set("Content-Type", "application/json")
 			pointJsonErr := json.NewEncoder(w).Encode(response)
 			if pointJsonErr != nil{
-				//PUT REAL ERROR HERE LATER!
-				fmt.Println("FAILED TO ENCODE POINTS FETCH JSON!")
+				http.Error(w, "Failed to encode points struct to JSON!", 
+					http.StatusInternalServerError)
 				return
 			}
 
 		}else{
-			//PUT REAL ERROR HERE LATER!
-			fmt.Println("ITEM NOT FOUND!")
+			//Thrown if no point count found at ID.
+			http.Error(w, 
+				"No receipt found for that ID.",
+				http.StatusNotFound)
 			return
 		}
 
 	}else{
-		//ADD REAL ERROR HERE LATER!!!
-		fmt.Println("INCORRECT REQUEST!! HAS TO BE GET!")
+		//Only thrown if user deliberately uses a non-GET request.
+		http.Error(w, "Must be a GET request!", http.StatusBadRequest)
 	}
 
 }
