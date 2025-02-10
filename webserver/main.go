@@ -132,6 +132,21 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		//DEBUG; DESTROY LATER!!!
 		fmt.Println(totalPoints)
 
+		//Adds 6 points to total if the day of the purchase is odd.
+		datePieces := strings.Split(receipt.PurchaseDate, "-")
+		dayInt, dayErr := strconv.Atoi(datePieces[2])
+		if dayErr != nil{
+			//PUT REAL ERROR HERE LATER!
+			fmt.Println("FAILED TO PARSE DAY!")
+			return
+		}
+		if dayInt % 2 == 1{
+			totalPoints += 6
+		}
+
+		//DEBUG; DESTROY LATER!!!
+		fmt.Println(totalPoints)
+
 	}else{
 		//ADD REAL ERROR HERE LATER!!!
 		fmt.Println("BAD REQUEST!!!!")
