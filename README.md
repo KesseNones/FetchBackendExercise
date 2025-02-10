@@ -52,6 +52,13 @@ using something like the `docker stop` command, or whatever else you prefer.
 # Assumptions Made
 In creating this program, some assumptions did have to be made.
 
+## Submitting Same Receipt
+It was assumed that the user can submit the same receipt as previous.
+It'll just be treated as a different receipt and have a new id generated
+for it. The two id's will thus just have the same point value.
+If a check needs to be made for duplicates, then that'll be a problem, 
+but otherwise it's probably fine.
+
 ## Strictness
 It was assumed that there were very strict standards on the receipt format.
 Beyond just having the data, it was throughly checked that the data followed
