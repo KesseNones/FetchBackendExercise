@@ -7,7 +7,6 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"encoding/json"
-	"io/ioutil"
 	"unicode"
 	"strconv"
 	"strings"
@@ -44,19 +43,13 @@ type PointResponse struct {
 // and writes points to database.
 func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 	if r.Method == http.MethodPost{
-		requestBody, err := ioutil.ReadAll(r.Body)
-		if err != nil{
-			//ADD REAL ERROR HERE!
-			fmt.Println("FAILURE READING!!!")
-			return
-		}
-
 		var receipt Receipt
 
-		marshErr := json.Unmarshal(requestBody, &receipt)
-		if marshErr != nil{
-			//PUT REAL ERROR HERE LATER!!!
-			fmt.Println("FAILED TO PARSE BECAUSE:", marshErr)
+		jsonParseErr := json.NewDecoder(r.Body).Decode(&receipt)
+		if jsonParseErr != nil{
+			http.Error(w, 
+				fmt.Sprintf("Invalid JSON: %s", jsonParseErr), 
+				http.StatusBadRequest)
 			return
 		}
 
@@ -86,6 +79,7 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		// for the two following point calculations.
 		floatTotal, convErr := strconv.ParseFloat(receipt.Total, 64)
 		if convErr != nil{
+
 			//PROBABLY ADD A REAL ERROR HERE LATER
 			fmt.Println("FAILED TO CONVERT TOTAL TO FLOAT!!!")
 			return
