@@ -32,6 +32,10 @@ type DataBase struct {
 	Data map[string]int
 }
 
+type IdResponse struct {
+	Id string `json:"id"`
+}
+
 //Takes in the input receipt, calculates point value, 
 // and writes points to database.
 func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
@@ -51,9 +55,6 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 			fmt.Println("FAILED TO PARSE BECAUSE:", marshErr)
 			return
 		}
-
-		//DEBUG; DESTROY LATER
-		fmt.Println("SUCCESS:", uuid.New().String())
 
 		//DEBUG OUTPUT
 		//DESTROY LATER!!!
@@ -178,6 +179,21 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 
 		//DEBUG; DESTROY LATER!!!
 		fmt.Println(totalPoints)
+
+		//Generates uuid for receipt and inserts into database.
+		id := uuid.New().String()
+		db.Data[id] = totalPoints
+		
+		output := IdResponse{id}
+
+		//Sends response json with id.
+		w.Header().Set("Content-Type", "application/json")
+		idJsonErr := json.NewEncoder(w).Encode(output)
+		if idJsonErr != nil{
+			//PUT REAL ERROR HERE LATER!
+			fmt.Println("FAILED TO ENCODE RESPONSE JSON!")
+			return
+		}
 
 
 	}else{
