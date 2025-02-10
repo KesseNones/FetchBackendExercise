@@ -93,6 +93,12 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 				InvalidReceiptError(w)
 				return
 			}
+			//Makes sure there's no fractional cents, 
+			// meaning smallest unit possible is 0.01.
+			if ((priceNum * 100.0) - float64(int(priceNum * 100.0))) != 0.0{
+				InvalidReceiptError(w)
+				return
+			}
 			prices = append(prices, priceNum)
 		}
 
@@ -109,6 +115,12 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		// Also makes sure it's not negative.
 		floatTotal, convErr := strconv.ParseFloat(receipt.Total, 64)
 		if convErr != nil || floatTotal < 0.0{
+			InvalidReceiptError(w)
+			return
+		}
+
+		//Ensures no fractional cents in total.
+		if ((floatTotal * 100.0) - float64(int(floatTotal * 100.0))) != 0.0{
 			InvalidReceiptError(w)
 			return
 		}
