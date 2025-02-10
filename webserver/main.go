@@ -55,15 +55,6 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 			return
 		}
 
-		//DEBUG OUTPUT
-		//DESTROY LATER!!!
-		jsonString, toStrErr := json.Marshal(receipt)
-		if toStrErr != nil {
-			fmt.Println(toStrErr)
-			return
-		}
-		fmt.Println("READ IN:\n", string(jsonString))
-
 		totalPoints := 0
 
 		//Kicks back error if any of the required fields don't exist 
@@ -111,9 +102,6 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 			} 
 		}
 
-		//DEBUG; DESTROY LATER
-		fmt.Println(totalPoints)
-
 		//Parses receipt Total to floating point 
 		// for the two following point calculations.
 		// Also makes sure it's not negative.
@@ -128,23 +116,16 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		// if testing goes that far.
 		if floatTotal == float64(int(floatTotal)){
 			totalPoints += 50
-		}
+		}	
 
-		//DEBUG; DESTROY LATER!!!
-		fmt.Println(totalPoints)
-
-		//25 points if the total is a multiple of 0.25
+		//25 points if the total is a multiple of 0.25.
+		//Cheated slightly but the math works out the same.
 		if int(floatTotal * 100) % 25 == 0{
 			totalPoints += 25
-		}
-		//DEBUG; DESTROY LATER!!!
-		fmt.Println(totalPoints)
+		}	
 
 		//5 points for every two items on receipt.
 		totalPoints += ((len(receipt.Items) / 2) * 5)
-
-		//DEBUG; DESTROY LATER!!!
-		fmt.Println(totalPoints)
 
 		//Iterates through items of given receipt, 
 		// if the trimmed length of an item is a multiple of 3,
@@ -158,10 +139,7 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 				// not reseting total.
 				totalPoints += int(math.Ceil(prices[i] * 0.2))
 			}
-		}
-
-		//DEBUG; DESTROY LATER!!!
-		fmt.Println(totalPoints)
+		}		
 
 		//Splits up date for parsing.
 		datePieces := strings.Split(receipt.PurchaseDate, "-")
@@ -203,9 +181,6 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		if dayInt % 2 == 1{
 			totalPoints += 6
 		}
-
-		//DEBUG; DESTROY LATER!!!
-		fmt.Println(totalPoints)
 		
 		//Splits time into hours and minutes.
 		timePieces := strings.Split(receipt.PurchaseTime, ":")
@@ -230,9 +205,6 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		if (hourInt == 14 && minInt > 0) || hourInt == 15{
 			totalPoints += 10
 		} 
-
-		//DEBUG; DESTROY LATER!!!
-		fmt.Println(totalPoints)
 
 		//Generates uuid for receipt and inserts into database.
 		id := uuid.New().String()
@@ -260,15 +232,10 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 //Given an id in the input url, accesses the database with that id, 
 // and sends how many points that receipt was given.
 func (db *DataBase) GetPointsFromId(w http.ResponseWriter, r *http.Request){
-	//DEBUG; DESTROY LATER!
-	fmt.Println(r.URL.String())
 
 	if r.Method == http.MethodGet{
 		//Fetches id to query database with.
 		queryId := strings.Split(r.URL.String(), "/")[2]	
-
-		//DEBUG; DESTROY LATER!
-		fmt.Println(queryId)
 
 		//Queries database using ID to get points associated with ID.
 		points, found := db.Data[queryId]
