@@ -143,8 +143,7 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 			if len(strings.TrimSpace(item.ShortDesc)) % 3 == 0{
 				floatPrice, err := strconv.ParseFloat(item.Price, 64)
 				if err != nil{
-					//PUT REAL ERROR HERE LATER!!!
-					fmt.Println("FAILED TO PARSE ITEM PRICE!")
+					InvalidReceiptError(w)
 					return
 				}
 
@@ -159,12 +158,41 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 
 		//Adds 6 points to total if the day of the purchase is odd.
 		datePieces := strings.Split(receipt.PurchaseDate, "-")
+		//Checks to make sure each part of date is a valid date piece.
+		yearInt, yearErr := strconv.Atoi(datePieces[0])
+		monthInt, monthErr := strconv.Atoi(datePieces[1])
 		dayInt, dayErr := strconv.Atoi(datePieces[2])
-		if dayErr != nil{
-			//PUT REAL ERROR HERE LATER!
-			fmt.Println("FAILED TO PARSE DAY!")
+
+		//Errors out if any part of the date isn't an integer.
+		if yearErr != nil || monthErr != nil || dayErr != nil{
+			InvalidReceiptError(w)
 			return
 		}
+
+		//Checks to make sure month is within correct range.
+		if monthInt < 1 || monthInt > 12{
+			InvalidReceiptError(w)
+			return
+		}
+
+		//Determines days of months for given year of receipt.
+		daysOfMonths := []int{
+			31, 28, 31, 
+			30, 31, 30, 
+			31, 31, 30, 
+			31, 30, 31}
+		//Makes February 29 days if it's a leap year.
+		if yearInt % 4 == 0 && (yearInt % 100 != 0 || yearInt % 400 == 0){
+			daysOfMonths[1] += 1
+		}
+
+		//Checks to make sure current day is a valid day in the given month.
+		if dayInt < 1 || dayInt > daysOfMonths[monthInt - 1]{
+			InvalidReceiptError(w)
+			return
+		}
+
+		//Adds if day is odd.
 		if dayInt % 2 == 1{
 			totalPoints += 6
 		}
@@ -175,22 +203,21 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
                 //Adds 10 points if time of purchase is after 14:00 sharp and before 16:00.
                 // This is interpreted to mean that any time between 14:01 
                 // and 15:59 inclusive is valid.
-		// Also assuming that hour stays in range 0-23 
-		// inclusive and minute 0-59 inclusive.
+		
 		//Splits time into hours and minutes.
 		timePieces := strings.Split(receipt.PurchaseTime, ":")
-		//Parses hour.
+		
+		//Parses hour and minute, kicking back error if either one isn't valid.
 		hourInt, hourErr := strconv.Atoi(timePieces[0])
-		if hourErr != nil{
-			//PUT REAL ERROR HERE LATER!
-			fmt.Println("ERROR! Failed to parse purchase hour!")
+		minInt, minErr := strconv.Atoi(timePieces[1])
+		if hourErr != nil || minErr != nil{
+			InvalidReceiptError(w)
 			return
 		}
-		//Parses minute.
-		minInt, minErr := strconv.Atoi(timePieces[1])
-		if minErr != nil{
-			//PUT REAL ERROR HERE LATER!
-			fmt.Println("ERROR! Failed to parse purchase minute!")
+
+		//Throws error if hour and minute not in valid ranges for time.
+		if hourInt < 0 || hourInt > 23 || minInt < 0 || minInt > 59{
+			InvalidReceiptError(w)
 			return
 		}
 
@@ -198,7 +225,6 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		if (hourInt == 14 && minInt > 0) || hourInt == 15{
 			totalPoints += 10
 		} 
-
 
 		//DEBUG; DESTROY LATER!!!
 		fmt.Println(totalPoints)
