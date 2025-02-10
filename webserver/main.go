@@ -202,10 +202,17 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 	}
 }
 
+//Given an id in the input url, accesses the database with that id, 
+// and sends how many points that receipt was given.
+func (db *DataBase) GetPointsFromId(w http.ResponseWriter, r *http.Request){
+	fmt.Println(r.URL.String())
+}
+
 func main(){
 	data := DataBase{map[string]int{}}
 
 	http.HandleFunc("/receipts/process", data.InsertToDatabase)
+	http.HandleFunc("/receipts/{id}/points", data.GetPointsFromId)
 
 	fmt.Println("Listening on Port 8000!")
 	
