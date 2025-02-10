@@ -52,6 +52,11 @@ using something like the `docker stop` command, or whatever else you prefer.
 # Assumptions Made
 In creating this program, some assumptions did have to be made.
 
+## Validity of Total
+It's assumed that the total is the same as the sum of all the item
+prices. This isn't directly checked for and doesn't affect the point
+calculations, but this does mean an invalid receipt could slip by.
+
 ## Submitting Same Receipt
 It was assumed that the user can submit the same receipt as previous.
 It'll just be treated as a different receipt and have a new id generated
