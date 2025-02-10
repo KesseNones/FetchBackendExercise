@@ -88,7 +88,7 @@ This can be easily changed but for now it's a practical act of saving a bit of
 data on the backend. Plus, the databse itself is only a memory-based data-structure,
 so it's not made for longterm use anyway.
 
-## Needing to deal with multithreading.
+## Needing to Deal with Multithreading.
 The database struct not only contaiins a hashmap but also a mutex, meaning that 
 any one thread needs to lock down the mutex first before altering/querying the database,
 unlocking it after use. This ensures that there are no simultaenious databse changes, allowing
@@ -96,6 +96,19 @@ a sort of queue to form if a ton of queries are made at once. This was done sinc
 function does run in its own seperate quasi-thread type thing called a goroutine. Thus, a mutex
 ensures no overlaping edits or queries. Is this necessary for the scope of this kind of assignment?
 Probably not. Just good to have anyway.
+
+## Locality of Program
+It was also assumed that the server will only run over 
+a local network on one machine with the queries happening on the same machine.
+Some tweaking can be made to query from a different machine on the same network 
+but the local IP address of the server device will need to be known.
+
+To make this application able to work across the Internet and not just over LAN,
+a port will need to be forwarded and the public ip will be needed along with the 
+forwarded port. 
+
+Security-wise this is a nightmare so it's probably just a local webserver, hence
+why the assumption of it being local was made.
 
 # Conclusion
 Provided this application can run on your machine 
