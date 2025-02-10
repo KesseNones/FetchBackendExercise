@@ -148,6 +148,38 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		//DEBUG; DESTROY LATER!!!
 		fmt.Println(totalPoints)
 
+                //Adds 10 points if time of purchase is after 14:00 sharp and before 16:00.
+                // This is interpreted to mean that any time between 14:01 
+                // and 15:59 inclusive is valid.
+		// Also assuming that hour stays in range 0-23 
+		// inclusive and minute 0-59 inclusive.
+		//Splits time into hours and minutes.
+		timePieces := strings.Split(receipt.PurchaseTime, ":")
+		//Parses hour.
+		hourInt, hourErr := strconv.Atoi(timePieces[0])
+		if hourErr != nil{
+			//PUT REAL ERROR HERE LATER!
+			fmt.Println("ERROR! Failed to parse purchase hour!")
+			return
+		}
+		//Parses minute.
+		minInt, minErr := strconv.Atoi(timePieces[1])
+		if minErr != nil{
+			//PUT REAL ERROR HERE LATER!
+			fmt.Println("ERROR! Failed to parse purchase minute!")
+			return
+		}
+
+		//Adds 10 points if within desired range.
+		if (hourInt == 14 && minInt > 0) || hourInt == 15{
+			totalPoints += 10
+		} 
+
+
+		//DEBUG; DESTROY LATER!!!
+		fmt.Println(totalPoints)
+
+
 	}else{
 		//ADD REAL ERROR HERE LATER!!!
 		fmt.Println("BAD REQUEST!!!!")
