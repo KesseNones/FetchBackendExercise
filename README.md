@@ -59,15 +59,6 @@ the proper formats when indicated, such as no negative prices, correct dates and
 etc. Thus, there's a hefty amount of built-in checking to make sure the receipt is
 a valid one. 
 
-## Time Ranges
-The instructions clearly indicated that the valid time range was after 2 pm and before 4 pm 
-to get the extra points for that part of the point calculations. 
-
-This was interpreted to mean that times of 14:01 all the way to 15:59 inclusive were valid.
-If this is too lenient and only times in the 15 hour zone work, then this will cause issues.
-If not, great! It's a fairly reasonable assumption to make since 14:01 to 15:59 fulfils the
-after 2 pm and before 4 pm criterion.
-
 ## Lack of Error Diversity
 The API seemed to make it pretty clear that only two common errors needed to exist:
 a BadRequest, which contains the text "The receipt is invalid." and 
