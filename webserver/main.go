@@ -80,15 +80,26 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 			return
 		}
 
+		prices := []float64{}
+
 		//Iterates through all items in receipt, 
 		// and makes sure required fields 
 		// of each item have something in them, 
-		// indicating they exist.	
+		// indicating they exist.
+		//Also checks to make sure all prices 
+		// are valid numbers and are positive.
 		for _, item := range receipt.Items{
 			if len(item.ShortDesc) == 0 || len(item.Price) == 0{
 				InvalidReceiptError(w)
 				return
 			}
+			//Kicks back error if any prices in items are non-numbers or negative.
+			priceNum, err := strconv.ParseFloat(item.Price, 64)
+			if err != nil || priceNum < 0.0{
+				InvalidReceiptError(w)
+				return
+			}
+			prices = append(prices, priceNum)
 		}
 
 		//One point for every alphanumeric character 
@@ -139,17 +150,11 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		// and rounds up to nearest integer (ceiling), 
 		// the result of which is the number of points added 
 		// to the total from that given item.
-		for _, item := range receipt.Items{
+		for i, item := range receipt.Items{
 			if len(strings.TrimSpace(item.ShortDesc)) % 3 == 0{
-				floatPrice, err := strconv.ParseFloat(item.Price, 64)
-				if err != nil{
-					InvalidReceiptError(w)
-					return
-				}
-
 				//Interpreting "number of points earned" to mean adding to total, 
 				// not reseting total.
-				totalPoints += int(math.Ceil(floatPrice * 0.2))
+				totalPoints += int(math.Ceil(prices[i] * 0.2))
 			}
 		}
 
@@ -238,9 +243,9 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 		//Sends response json with id.
 		w.Header().Set("Content-Type", "application/json")
 		idJsonErr := json.NewEncoder(w).Encode(output)
+		//Not likely to be thrown but here just in case.
 		if idJsonErr != nil{
-			//PUT REAL ERROR HERE LATER!
-			fmt.Println("FAILED TO ENCODE RESPONSE JSON!")
+			http.Error(w, "Failed to encode ID JSON!", http.StatusInternalServerError)
 			return
 		}
 
