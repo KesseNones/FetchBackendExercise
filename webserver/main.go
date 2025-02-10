@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"math"
+	"sync"
 )
 
 type ReceiptItem struct{
@@ -28,6 +29,7 @@ type Receipt struct{
 }
 
 type DataBase struct {
+	Mut sync.Mutex	
 	Data map[string]int
 }
 
@@ -208,8 +210,10 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 
 		//Generates uuid for receipt and inserts into database.
 		id := uuid.New().String()
+		db.Mut.Lock()
 		db.Data[id] = totalPoints
-		
+		db.Mut.Unlock()
+
 		output := IdResponse{id}
 
 		//Sends response json with id.
@@ -238,7 +242,9 @@ func (db *DataBase) GetPointsFromId(w http.ResponseWriter, r *http.Request){
 		queryId := strings.Split(r.URL.String(), "/")[2]	
 
 		//Queries database using ID to get points associated with ID.
+		db.Mut.Lock()
 		points, found := db.Data[queryId]
+		db.Mut.Unlock()
 		if found{
 			response := PointResponse{points}
 			w.Header().Set("Content-Type", "application/json")
@@ -265,12 +271,12 @@ func (db *DataBase) GetPointsFromId(w http.ResponseWriter, r *http.Request){
 }
 
 func main(){
-	data := DataBase{map[string]int{}}
+	data := DataBase{Data: map[string]int{}}
 
 	http.HandleFunc("/receipts/process", data.InsertToDatabase)
 	http.HandleFunc("/receipts/{id}/points", data.GetPointsFromId)
 
-	fmt.Println("Listening on Port 8000!")
+	fmt.Println("Listening on port 8000!")
 	
 	err := http.ListenAndServe(":8000", nil)
 

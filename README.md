@@ -73,11 +73,6 @@ and when the database is queried with an ID that doesn't exist, NotFound is thro
 
 There are a couple exceptions but those errors are very much not likely to be thrown.
 
-## Lack of Extreme Multi-Processing.
-At present, the program has no mutexes, meaning if a ton of requests are made at once, the database
-might melt slightly and return unpredictable results.
-The solution would be to just add mutexes but I haven't yet so that's what's up with that.
-
 ## No Receipt Storage
 The receipts are not stored in the database, since only points are ever queried. 
 This can be easily changed but for now it's a practical act of saving a bit of 
