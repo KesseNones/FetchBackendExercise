@@ -80,6 +80,17 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 			return
 		}
 
+		//Iterates through all items in receipt, 
+		// and makes sure required fields 
+		// of each item have something in them, 
+		// indicating they exist.	
+		for _, item := range receipt.Items{
+			if len(item.ShortDesc) == 0 || len(item.Price) == 0{
+				InvalidReceiptError(w)
+				return
+			}
+		}
+
 		//One point for every alphanumeric character 
 		// in retailer name.
 		for _, c := range receipt.Retailer{
