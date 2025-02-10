@@ -26,6 +26,7 @@
     as the script does just without sudo.
  3. Once the container is running, whatever terminal started it will see a message printed saying:
     > Listening on port 8000!
+    
     Indicating that the server is ready to begin processing queries.
  4. If port 8000 doesn't work, simply change the Dockerfile and code to use a different port number.
 
