@@ -36,6 +36,10 @@ type IdResponse struct {
 	Id string `json:"id"`
 }
 
+type PointResponse struct {
+	Points int `json:"points"`
+}
+
 //Takes in the input receipt, calculates point value, 
 // and writes points to database.
 func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
@@ -205,7 +209,39 @@ func (db *DataBase) InsertToDatabase(w http.ResponseWriter, r *http.Request){
 //Given an id in the input url, accesses the database with that id, 
 // and sends how many points that receipt was given.
 func (db *DataBase) GetPointsFromId(w http.ResponseWriter, r *http.Request){
+	//DEBUG; DESTROY LATER!
 	fmt.Println(r.URL.String())
+
+	if r.Method == http.MethodGet{
+		//Fetches id to query database with.
+		queryId := strings.Split(r.URL.String(), "/")[2]	
+
+		//DEBUG; DESTROY LATER!
+		fmt.Println(queryId)
+
+		//Queries database using ID to get points associated with ID.
+		points, found := db.Data[queryId]
+		if found{
+			response := PointResponse{points}
+			w.Header().Set("Content-Type", "application/json")
+			pointJsonErr := json.NewEncoder(w).Encode(response)
+			if pointJsonErr != nil{
+				//PUT REAL ERROR HERE LATER!
+				fmt.Println("FAILED TO ENCODE POINTS FETCH JSON!")
+				return
+			}
+
+		}else{
+			//PUT REAL ERROR HERE LATER!
+			fmt.Println("ITEM NOT FOUND!")
+			return
+		}
+
+	}else{
+		//ADD REAL ERROR HERE LATER!!!
+		fmt.Println("INCORRECT REQUEST!! HAS TO BE GET!")
+	}
+
 }
 
 func main(){
